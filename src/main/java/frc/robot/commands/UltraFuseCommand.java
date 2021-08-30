@@ -8,12 +8,12 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import frc.robot.subsystems.DrivebaseSubsystem;
-import frc.robot.subsystems.UltrasonicSubsystem;
+import frc.robot.subsystems.DistanceSubsystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class UltraFuseCommand extends CommandBase {
-  UltrasonicSubsystem ultrasonic;
+  DistanceSubsystem ultrasonic;
   DrivebaseSubsystem driveSub;
   final double kHoldDistance = 12.0; 
   final double kP = 0.05;
@@ -22,7 +22,7 @@ public class UltraFuseCommand extends CommandBase {
   boolean isFinished;
   Timer timer = new Timer();
 
-  public UltraFuseCommand(DrivebaseSubsystem driver, UltrasonicSubsystem ultra) {
+  public UltraFuseCommand(DrivebaseSubsystem driver, DistanceSubsystem ultra) {
     // Use addRequirements() here to declare subsystem dependencies.
     speed = 0.0;
     motorTurn = 0.0;

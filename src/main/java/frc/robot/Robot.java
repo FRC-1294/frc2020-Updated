@@ -1,16 +1,9 @@
 package frc.robot;
 
-import frc.robot.commands.AlignToShoot;
-import frc.robot.commands.AutoNavCommand;
 import frc.robot.commands.DictatorLocator;
 import frc.robot.commands.MoveByCommand;
-import frc.robot.commands.StalkerRoomba;
-import frc.robot.commands.TurnByCommand;
-import frc.robot.commands.VisionFinder;
-import frc.robot.commands.WallChecker;
-import frc.robot.subsystems.UltrasonicSubsystem;
+import frc.robot.subsystems.DistanceSubsystem;
 import frc.robot.subsystems.LimeLightSubsystem;
-import edu.wpi.first.hal.I2CJNI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -25,7 +18,7 @@ import frc.robot.subsystems.GameMechSubsystem;
  */
 public class Robot extends TimedRobot {
   public static Command m_autonomousCommand;
-  public static UltrasonicSubsystem ultrasonic;
+  public static DistanceSubsystem ultrasonic;
   public static LimeLightSubsystem limelight;
   public static GameMechSubsystem gameMech;
   public static DrivebaseSubsystem driveBase;
@@ -42,7 +35,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     gameMech = new GameMechSubsystem();
     driveBase = new DrivebaseSubsystem();
-    ultrasonic = new UltrasonicSubsystem();
+    ultrasonic = new DistanceSubsystem();
     limelight = new LimeLightSubsystem();
     
     driveBase.setFrontLeftSpeed(0);

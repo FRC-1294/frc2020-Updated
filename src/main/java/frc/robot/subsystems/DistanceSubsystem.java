@@ -2,13 +2,12 @@ package frc.robot.subsystems;
 
 import java.nio.ByteBuffer;
 import edu.wpi.first.hal.I2CJNI;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class UltrasonicSubsystem extends SubsystemBase {
+public class DistanceSubsystem extends SubsystemBase {
   // private static final double kValueToInches = 0.0528;
   // private final static AnalogInput m_ultrasonicLeft = new AnalogInput(0);
   
@@ -21,16 +20,14 @@ public class UltrasonicSubsystem extends SubsystemBase {
   I2C LidarPort;
   private static final byte deviceAddress = 0x62;
   
-  public UltrasonicSubsystem() {
+  public DistanceSubsystem() {
     LidarPort = new I2C(I2C.Port.kOnboard,deviceAddress);
     m_port = (byte) Port.kOnboard.value;
     I2CJNI.i2CInitialize(m_port);
 
     SmartDashboard.setDefaultNumber("Offset", -4);
     startMeasuring();
-    
-  } 
-
+  }
 
   public void close() {
     I2CJNI.i2CClose(m_port);

@@ -10,11 +10,11 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivebaseSubsystem;
-import frc.robot.subsystems.UltrasonicSubsystem;
+import frc.robot.subsystems.DistanceSubsystem;
 
 public class StalkerRoomba extends CommandBase {
   DrivebaseSubsystem m_robotDrive;
-  UltrasonicSubsystem m_ultra;
+  DistanceSubsystem m_ultra;
   WallChecker wallChecker;
   TurnByCommand turner;
   double speed;
@@ -27,7 +27,7 @@ public class StalkerRoomba extends CommandBase {
 
   public boolean isWall;
 
-  public StalkerRoomba(final double dis, final DrivebaseSubsystem robotDrive, final UltrasonicSubsystem ultra) {
+  public StalkerRoomba(final double dis, final DrivebaseSubsystem robotDrive, final DistanceSubsystem ultra) {
     targetDis = dis;
     currentDistance = 0.0;
     m_robotDrive = robotDrive;

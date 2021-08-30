@@ -10,14 +10,14 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivebaseSubsystem;
-import frc.robot.subsystems.UltrasonicSubsystem;
+import frc.robot.subsystems.DistanceSubsystem;
 
 public class WallChecker extends CommandBase {
   final int PIDSlot = 1;
   final double margin = 90;
   int HAL9000 = 0;
   int amount = 0;
-  UltrasonicSubsystem dracula;
+  DistanceSubsystem dracula;
   DrivebaseSubsystem whee;
   double[] threeMusketeers = new double[3];
   double[] threeAngles = new double[3];
@@ -26,7 +26,7 @@ public class WallChecker extends CommandBase {
 
   Timer timer = new Timer();
 
-  public WallChecker(int amount, DrivebaseSubsystem driver, UltrasonicSubsystem ultraBurst) {
+  public WallChecker(int amount, DrivebaseSubsystem driver, DistanceSubsystem ultraBurst) {
     this.amount = amount;
     dracula = ultraBurst;
     whee = driver;

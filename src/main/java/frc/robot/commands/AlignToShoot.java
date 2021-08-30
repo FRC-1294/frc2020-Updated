@@ -11,13 +11,13 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivebaseSubsystem;
 import frc.robot.subsystems.GameMechSubsystem;
-import frc.robot.subsystems.UltrasonicSubsystem;
+import frc.robot.subsystems.DistanceSubsystem;
 import frc.robot.subsystems.LimeLightSubsystem;
 import frc.robot.commands.FeedShooterCommand;
 
 public class AlignToShoot extends CommandBase {
   DrivebaseSubsystem m_driveAuto;
-  UltrasonicSubsystem m_ultra;
+  DistanceSubsystem m_ultra;
   GameMechSubsystem m_shooter;
   LimeLightSubsystem m_vision;
   WallChecker glasses;
@@ -53,7 +53,7 @@ public class AlignToShoot extends CommandBase {
 
   int step = 0;
 
-  public AlignToShoot(DrivebaseSubsystem driveAuto, UltrasonicSubsystem ultra, GameMechSubsystem shooter, LimeLightSubsystem vision, int targetDis, boolean shoot) {
+  public AlignToShoot(DrivebaseSubsystem driveAuto, DistanceSubsystem ultra, GameMechSubsystem shooter, LimeLightSubsystem vision, int targetDis, boolean shoot) {
     m_driveAuto = driveAuto;
     m_ultra = ultra;
     m_shooter = shooter;

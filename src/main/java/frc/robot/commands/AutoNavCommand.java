@@ -11,12 +11,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivebaseSubsystem;
 import frc.robot.subsystems.GameMechSubsystem;
-import frc.robot.subsystems.UltrasonicSubsystem;
+import frc.robot.subsystems.DistanceSubsystem;
 import frc.robot.subsystems.LimeLightSubsystem;
 
 public class AutoNavCommand extends CommandBase {
   DrivebaseSubsystem m_driveAuto;
-  UltrasonicSubsystem m_ultra;
+  DistanceSubsystem m_ultra;
   GameMechSubsystem m_shooter;
   LimeLightSubsystem m_vision;
 
@@ -51,7 +51,7 @@ public class AutoNavCommand extends CommandBase {
 
   int step = 0;
 
-  public AutoNavCommand(DrivebaseSubsystem driveAuto, UltrasonicSubsystem ultra, GameMechSubsystem shooter, LimeLightSubsystem vision) {
+  public AutoNavCommand(DrivebaseSubsystem driveAuto, DistanceSubsystem ultra, GameMechSubsystem shooter, LimeLightSubsystem vision) {
     m_driveAuto = driveAuto;
     m_ultra = ultra;
     m_shooter = shooter;
