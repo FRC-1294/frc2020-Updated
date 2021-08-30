@@ -67,23 +67,14 @@ public class GameMechSubsystem extends SubsystemBase {
         toShoot = false;
       }
     }
-    else {
-      toIndex = false;
-    }
-    if (toIndex){
-      setSRXSpeed(indexer, 0.5);
-    }
-    else {
-      if (!toReversed && !Robot.inAuto) setSRXSpeed(indexer, 0);
-    }
+    else toIndex = false;
+
+    if (toIndex) setSRXSpeed(indexer, 0.5);
+    else if (!toReversed && !Robot.inAuto) setSRXSpeed(indexer, 0);
 
     //intaker
-    if(triggerDrive() != 0){
-      setSRXSpeed(intaker, -triggerDrive()*0.5);
-    }
-    else {
-      setSRXSpeed(intaker, 0);
-    }
+    if(triggerDrive() != 0) setSRXSpeed(intaker, -triggerDrive()*0.5);
+    else setSRXSpeed(intaker, 0);
 
     //shooter
     if (gameJoystick.getBumperPressed(Hand.kLeft)) {
@@ -122,12 +113,8 @@ public class GameMechSubsystem extends SubsystemBase {
     }
     
     //shooter PID
-    if (toShoot) {
-      shooter.set(TalonFXControlMode.Velocity, currentSpeed * ticksPerRev);
-    }
-    else {
-      setFXSpeed(shooter, 0);
-    }
+    if (toShoot) shooter.set(TalonFXControlMode.Velocity, currentSpeed * ticksPerRev);
+    else  setFXSpeed(shooter, 0);
 
     if (gameJoystick.getYButtonPressed()) {
       extendColor = !extendColor;
@@ -140,12 +127,8 @@ public class GameMechSubsystem extends SubsystemBase {
     }
 
     //colorer
-    if(Math.abs(gameJoystick.getX(Hand.kRight)) >= 0.05){
-      setSRXSpeed(colorWheel, -gameJoystick.getX(Hand.kRight));
-    }
-    else {
-      setSRXSpeed(colorWheel, 0);
-    }
+    if(Math.abs(gameJoystick.getX(Hand.kRight)) >= 0.05) setSRXSpeed(colorWheel, -gameJoystick.getX(Hand.kRight));
+    else setSRXSpeed(colorWheel, 0);
   }
 
   public double triggerDrive() {

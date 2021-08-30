@@ -44,24 +44,22 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private final Gains defaultPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -0.5, 0.5, 0);
   private final Gains lowDisPID  = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0,   -1,   1, 1);
   private Timer timer = new Timer();
-  private Timer rumbleTime = new Timer();
   private boolean isTurning = false;
-  private int rumble = 0;
   private double factor = 1;
   private boolean isWall;
   
   public DrivebaseSubsystem() {
-    UsbCamera intakeCam = CameraServer.getInstance().startAutomaticCapture(0);
-    UsbCamera indexCam = CameraServer.getInstance().startAutomaticCapture(1);
+    // UsbCamera intakeCam = CameraServer.getInstance().startAutomaticCapture(0);
+    // UsbCamera indexCam = CameraServer.getInstance().startAutomaticCapture(1);
     frontLeftSpark.restoreFactoryDefaults(true);
     frontRightSpark.restoreFactoryDefaults(true);
     rearLeftSpark.restoreFactoryDefaults(true);
     rearRightSpark.restoreFactoryDefaults(true);
 
-    frontLeftSpark.setMotorType(MotorType.kBrushless);
-    frontRightSpark.setMotorType(MotorType.kBrushless);
-    rearLeftSpark.setMotorType(MotorType.kBrushless);
-    rearRightSpark.setMotorType(MotorType.kBrushless);
+    // frontLeftSpark.setMotorType(MotorType.kBrushless);
+    // frontRightSpark.setMotorType(MotorType.kBrushless);
+    // rearLeftSpark.setMotorType(MotorType.kBrushless);
+    // rearRightSpark.setMotorType(MotorType.kBrushless);
 
     frontLeftSpark.getEncoder();
     frontRightSpark.getEncoder();
@@ -101,71 +99,36 @@ public class DrivebaseSubsystem extends SubsystemBase {
     rearRightSpark.follow(frontRightSpark);
 
     timer.start();
-    rumbleTime.start();
+
+    driveJoystick.setRumble(RumbleType.kLeftRumble, 0);
+    driveJoystick.setRumble(RumbleType.kRightRumble, 0);
   }
 
   @Override
   public void periodic() {
-    sparkDrive.feedWatchdog();
+    // sparkDrive.feedWatchdog();
 
-    SmartDashboard.putString("AmountTraveled", getAmountTraveled(0) + " , " + getAmountTraveled(1));
-    SmartDashboard.putNumber("currentAngle", getCurrentAngle());
-    SmartDashboard.putNumber("encoder", getFrontLeftPosition());
-
-    if (driveJoystick.getBumper(Hand.kRight)) {
-      setMode("brake");
-    }
-    else {
-      setMode("coast");
-    }
+    // if (driveJoystick.getBumper(Hand.kRight)) setMode("brake");
+    // else setMode("coast");
 
     if (driveJoystick.getBumperPressed(Hand.kLeft)) {
-      if (factor == 1) {
-        factor = 0.5;
-      }
-      else {
-        factor = 1;
-      }
-    }
-
-    // if (driveJoystick.getYButton()) {
-    //   Robot.cassius.setPipeline(0);
-    // }
-    // else {
-    //   Robot.cassius.setPipeline(1);
-    // }
-
-    // if (driveJoystick.getAButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
-    //   rumble = 0;
-    //   visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.letsShoot, Robot.cassius, 10*12, false);
-    //   visionMove.schedule();
-    //   System.out.println("Scheduling visionMove");
-    // }
-    // else if (driveJoystick.getBButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
-    //   rumble = 0;
-    //   visionRotate = new DictatorLocator(Robot.cassius, this);
-    //   visionRotate.schedule();
-    //   System.out.println("Scheduling visionRotate");
-    // }
-    // else {
-    //   rumble = 8;
-    // }
-
-    if (rumble != 0) {
-      if (rumbleTime.get() > 1) {
-        rumble = 0;
-      }
-    }
-    else {
-      rumbleTime.reset();
+      if (factor == 1) factor = 0.5;
+      else  factor = 1;
     }
 
     arcadeDrive(driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kRight));
-    driveJoystick.setRumble(RumbleType.kLeftRumble, rumble);
   }
 
   public void arcadeDrive(double forward, double turn) {
     sparkDrive.arcadeDrive(turn*0.5*factor, -forward);
+  }
+
+  public void stop() {
+    sparkDrive.arcadeDrive(0, 0);
+    setFrontLeftSpeed(0);
+    setFrontRightSpeed(0);
+    setRearLeftSpeed(0);
+    setRearRightSpeed(0);
   }
 
   public void setWall(boolean thiss){

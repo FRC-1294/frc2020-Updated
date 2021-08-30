@@ -44,19 +44,13 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     // CommandScheduler.getInstance().cancelAll();
-    driveBase.setFrontLeftSpeed(0);
-    driveBase.setFrontRightSpeed(0);
-    driveBase.setRearLeftSpeed(0);
-    driveBase.setRearRightSpeed(0);
+    driveBase.stop();
     gameMech.setZero();
   }
 
   @Override
   public void disabledPeriodic() {
-    driveBase.setFrontLeftSpeed(0);
-    driveBase.setFrontRightSpeed(0);
-    driveBase.setRearLeftSpeed(0); 
-    driveBase.setRearRightSpeed(0);
+    driveBase.stop();
     gameMech.setZero();
   }
 
