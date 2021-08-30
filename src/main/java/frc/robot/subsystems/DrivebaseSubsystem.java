@@ -19,9 +19,6 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Gains;
-import frc.robot.Robot;
-import frc.robot.commands.AlignToShoot;
-import frc.robot.commands.DictatorLocator;
 
 public class DrivebaseSubsystem extends SubsystemBase {
   //Spark diff drive init
@@ -51,8 +48,6 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private boolean isTurning = false;
   private int rumble = 0;
   private double factor = 1;
-  private AlignToShoot visionMove;
-  private DictatorLocator visionRotate;
   private boolean isWall;
   
   public DrivebaseSubsystem() {
@@ -105,9 +100,6 @@ public class DrivebaseSubsystem extends SubsystemBase {
     rearLeftSpark.follow(frontLeftSpark);
     rearRightSpark.follow(frontRightSpark);
 
-    visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.gameMech, Robot.limelight, 5*12, false);
-    visionRotate = new DictatorLocator(Robot.limelight, this);
-
     timer.start();
     rumbleTime.start();
   }
@@ -119,16 +111,6 @@ public class DrivebaseSubsystem extends SubsystemBase {
     SmartDashboard.putString("AmountTraveled", getAmountTraveled(0) + " , " + getAmountTraveled(1));
     SmartDashboard.putNumber("currentAngle", getCurrentAngle());
     SmartDashboard.putNumber("encoder", getFrontLeftPosition());
-    SmartDashboard.putNumber("Ultrasonic Value", Robot.ultrasonic.getSensourLeft());
-
-    if (driveJoystick.getStartButtonPressed()) {
-      if (visionMove.isScheduled()) {
-        visionMove.cancel();
-      }
-      if (visionRotate.isScheduled()) {
-        visionRotate.cancel();
-      }
-    }
 
     if (driveJoystick.getBumper(Hand.kRight)) {
       setMode("brake");

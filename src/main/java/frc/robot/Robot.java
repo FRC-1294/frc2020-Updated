@@ -1,18 +1,7 @@
 package frc.robot;
 
-import frc.robot.commands.AlignToShoot;
-import frc.robot.commands.AutoNavCommand;
-import frc.robot.commands.DictatorLocator;
 import frc.robot.commands.MoveByCommand;
-import frc.robot.commands.StalkerRoomba;
-import frc.robot.commands.TurnByCommand;
-import frc.robot.commands.VisionFinder;
-import frc.robot.commands.WallChecker;
-import frc.robot.subsystems.UltrasonicSubsystem;
-import frc.robot.subsystems.LimeLightSubsystem;
-import edu.wpi.first.hal.I2CJNI;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.DrivebaseSubsystem;
 import frc.robot.subsystems.GameMechSubsystem;
@@ -24,9 +13,6 @@ import frc.robot.subsystems.GameMechSubsystem;
  * project.
  */
 public class Robot extends TimedRobot {
-  public static Command m_autonomousCommand;
-  public static UltrasonicSubsystem ultrasonic;
-  public static LimeLightSubsystem limelight;
   public static GameMechSubsystem gameMech;
   public static DrivebaseSubsystem driveBase;
   public static MoveByCommand chacharealmooth;
@@ -42,15 +28,12 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     gameMech = new GameMechSubsystem();
     driveBase = new DrivebaseSubsystem();
-    ultrasonic = new UltrasonicSubsystem();
-    limelight = new LimeLightSubsystem();
     
     driveBase.setFrontLeftSpeed(0);
     driveBase.setFrontRightSpeed(0);
     driveBase.setRearLeftSpeed(0); 
     driveBase.setRearRightSpeed(0);
     gameMech.setZero();
-    limelight.setPipeline(1);
   }
   
   @Override
@@ -66,7 +49,6 @@ public class Robot extends TimedRobot {
     driveBase.setRearLeftSpeed(0);
     driveBase.setRearRightSpeed(0);
     gameMech.setZero();
-    limelight.setPipeline(1);
   }
 
   @Override
@@ -76,23 +58,13 @@ public class Robot extends TimedRobot {
     driveBase.setRearLeftSpeed(0); 
     driveBase.setRearRightSpeed(0);
     gameMech.setZero();
-    limelight.setPipeline(1);
   }
 
   /**
    * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
    */
   @Override
-  public void autonomousInit() {
-    m_autonomousCommand = new DictatorLocator(limelight, driveBase);//new TurnByCommand(360, m_driveAuto, 0);//new AlignToShoot(m_driveAuto, ultrasonic, letsShoot, cassius, 112, true);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);
-    
-
-    // schedule the autonomous command (example)
-    if (!m_autonomousCommand.isScheduled()) {
-      //m_autonomousCommand = new DictatorLocator(cassius, m_driveAuto);
-      m_autonomousCommand.schedule();
-    }
-  }
+  public void autonomousInit() {}
 
   /**
    * This function is called periodically during autonomo us.
@@ -100,21 +72,10 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     inAuto = true;
-    // if (!m_autonomousCommand.isFinished() && !m_autonomousCommand.isScheduled()) {
-    //   m_autonomousCommand =  new AutoNavCommand(driveAuto, ultrasonic);
-    //   m_autonomousCommand.schedule();
-    // }
   }
 
   @Override
-  public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
-
-    ultrasonic.close();
-
-  }
+  public void teleopInit() {}
 
   /**
    * This function is called periodically during operator control.
