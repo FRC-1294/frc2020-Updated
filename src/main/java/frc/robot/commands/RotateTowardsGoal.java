@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DrivebaseSubsystem;
 import frc.robot.subsystems.LimeLightSubsystem;
 
-public class DictatorLocator extends CommandBase {
+public class RotateTowardsGoal extends CommandBase {
   final double lepidus = 2.5;
   TurnByCommand MarkAntony;
   DrivebaseSubsystem GermanicCalvalry;
@@ -21,7 +21,7 @@ public class DictatorLocator extends CommandBase {
   boolean isFinished;
   Timer timer = new Timer();
 
-  public DictatorLocator(LimeLightSubsystem marcus, DrivebaseSubsystem horses) {
+  public RotateTowardsGoal(LimeLightSubsystem marcus, DrivebaseSubsystem horses) {
     GermanicCalvalry = horses;
     isFinished = false;
     Brutus = marcus;

@@ -21,7 +21,7 @@ import frc.robot.Constants;
 import frc.robot.Gains;
 import frc.robot.Robot;
 import frc.robot.commands.AlignToShoot;
-import frc.robot.commands.DictatorLocator;
+import frc.robot.commands.RotateTowardsGoal;
 
 public class DrivebaseSubsystem extends SubsystemBase {
   //Spark diff drive init
@@ -52,7 +52,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private int rumble = 0;
   private double factor = 1;
   private AlignToShoot visionMove;
-  private DictatorLocator visionRotate;
+  private RotateTowardsGoal visionRotate;
   private boolean isWall;
   
   public DrivebaseSubsystem() {
@@ -106,7 +106,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
     rearRightSpark.follow(frontRightSpark);
 
     visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.gameMech, Robot.limelight, 5*12, false);
-    visionRotate = new DictatorLocator(Robot.limelight, this);
+    visionRotate = new RotateTowardsGoal(Robot.limelight, this);
 
     timer.start();
     rumbleTime.start();

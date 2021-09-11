@@ -11,12 +11,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.GameMechSubsystem;
 
-public class FeedShooterCommand extends CommandBase {
+public class FeedShooter extends CommandBase {
   GameMechSubsystem m_shooter;
   double targetTime;
   Timer timer;
 
-  public FeedShooterCommand(GameMechSubsystem shooter, double time) {
+  public FeedShooter(GameMechSubsystem shooter, double time) {
     m_shooter = shooter;
     targetTime = time;
   }

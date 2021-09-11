@@ -1,6 +1,6 @@
 package frc.robot;
 
-import frc.robot.commands.DictatorLocator;
+import frc.robot.commands.RotateTowardsGoal;
 import frc.robot.commands.MoveByCommand;
 import frc.robot.subsystems.DistanceSubsystem;
 import frc.robot.subsystems.LimeLightSubsystem;
@@ -77,8 +77,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = new DictatorLocator(limelight, driveBase);//new TurnByCommand(360, m_driveAuto, 0);//new AlignToShoot(m_driveAuto, ultrasonic, letsShoot, cassius, 112, true);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);
-    
+    m_autonomousCommand = new RotateTowardsGoal(limelight, driveBase);//new TurnByCommand(360, m_driveAuto, 0);//new AlignToShoot(m_driveAuto, ultrasonic, letsShoot, cassius, 112, true);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);
 
     // schedule the autonomous command (example)
     if (!m_autonomousCommand.isScheduled()) {

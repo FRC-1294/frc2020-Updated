@@ -13,39 +13,27 @@ import frc.robot.subsystems.DrivebaseSubsystem;
 import frc.robot.subsystems.GameMechSubsystem;
 import frc.robot.subsystems.DistanceSubsystem;
 import frc.robot.subsystems.LimeLightSubsystem;
-import frc.robot.commands.FeedShooterCommand;
 
 public class AlignToShoot extends CommandBase {
   DrivebaseSubsystem m_driveAuto;
   DistanceSubsystem m_ultra;
   GameMechSubsystem m_shooter;
   LimeLightSubsystem m_vision;
-  WallChecker glasses;
 
   MoveByCommand autoPath;
-  DictatorLocator alignToTarget;
-  FeedShooterCommand feedShooterCommand;
-  UltraFuseCommand ultraFuse;
+  RotateTowardsGoal alignToTarget;
+  FeedShooter feedShooterCommand;
 
   Timer timer = new Timer();
 
   boolean isFinished;
-  boolean left1;
-  boolean left2;
   boolean shouldShoot;
   boolean shooter;
   boolean shooterReady;
-  boolean loopComplete;
-  int iterations;
-  int targetAngle;
   int xTarget;
-  int yTarget;
   double shooterSpeed;
-  int shootDis = 110;
-  double[] startAmount;
 
-  final int autoPathMargin = 2;
-  final int robotFollowDis = 5*12;
+  final int shootDis = 110;
   final double ticksPerRev = -2.59;
   final double shootRPM = 6300;
   final int shootMargin = 50;
@@ -60,7 +48,6 @@ public class AlignToShoot extends CommandBase {
     m_vision = vision;
 
     shouldShoot = shoot;
-    glasses = new WallChecker(40, m_driveAuto, m_ultra);
   }
 
   // Called when the command is initially scheduled.
@@ -73,114 +60,63 @@ public class AlignToShoot extends CommandBase {
     timer.reset();
     resetVars();
 
-    startAmount = new double[] {m_driveAuto.getAmountTraveled(0), m_driveAuto.getAmountTraveled(1)};
-    left1 = false;
-    left2 = false;
     autoPath = new MoveByCommand(xTarget, m_driveAuto, 0);
-    ultraFuse = new UltraFuseCommand(m_driveAuto, m_ultra);
-    feedShooterCommand = new FeedShooterCommand(m_shooter, shootTime);
-    alignToTarget = new DictatorLocator(m_vision, m_driveAuto);
-
-    ultraFuse.schedule();
+    feedShooterCommand = new FeedShooter(m_shooter, shootTime);
+    alignToTarget = new RotateTowardsGoal(m_vision, m_driveAuto);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    //distance left to travel
-    double xRem = Math.abs(xTarget - m_driveAuto.getAmountTraveled(0) + startAmount[0]);
-    double yRem = Math.abs(yTarget - m_driveAuto.getAmountTraveled(1) + startAmount[1]);
-
-    // System.out.println("Step: " + step + " " + autoPath.isScheduled());
-    // System.out.println(!autoPath.isScheduled() && !alignToTarget.isScheduled() && !feedShooterCommand.isScheduled() && ultraFuse.isScheduled() && !glasses.isScheduled());
-
-    if (shouldShoot) checkShooter();
-
-    // System.out.println(step);
+    if (shouldShoot) initShooter();
 
     //if current leg of path finished, schedule next in sequence
-    if (!autoPath.isScheduled() && !alignToTarget.isScheduled() && !feedShooterCommand.isScheduled() && ultraFuse.isScheduled() && !glasses.isScheduled()) {
-      //if (Math.abs(xRem) <= autoPathMargin && Math.abs(yRem) <= autoPathMargin) {
-        //align with hoop and shoot && get shooter ready
-        if (step == 0) {
-          alignToTarget = new DictatorLocator(m_vision, m_driveAuto);
-          alignToTarget.schedule();
-          step++;
-          m_driveAuto.setWall(false);
-        }
-        //check wall
-        else if(step == 1){
-          if(!m_driveAuto.getWall() && shouldShoot){
-            glasses = new WallChecker(20, m_driveAuto, m_ultra);
-            glasses.schedule();
-          }
-          else{
-            m_driveAuto.setWall(false);
+    if (!autoPath.isScheduled() && !alignToTarget.isScheduled() && !feedShooterCommand.isScheduled()) {
+      //align with hoop and shoot && get shooter ready
+      if (step == 0) {
+        alignToTarget = new RotateTowardsGoal(m_vision, m_driveAuto);
+        alignToTarget.schedule();
+        step++;
+        m_driveAuto.setWall(false);
+      }
+      //move until shooting distance
+      else if (step == 1) {
+        xTarget = (int)m_ultra.getSensourLeft() - shootDis;
+        autoPath = new MoveByCommand(xTarget, m_driveAuto, 0);
+        autoPath.schedule();
+        step++;
+      }
+      //realign
+      else if (step == 2) {
+        shooter = true;
+        alignToTarget = new RotateTowardsGoal(m_vision, m_driveAuto);
+        alignToTarget.schedule();
+        step++;
+      }
+      //SHOOT
+      else if (step == 3) {
+        if (shouldShoot) {
+          if (shooterReady) {
+            feedShooterCommand = new FeedShooter(m_shooter, shootTime);
+            feedShooterCommand.schedule();
             step++;
           }
-        }
-        //move until shooting distance
-        else if (step == 2) {
-          xTarget = (int)m_ultra.getSensourLeft() - shootDis;
-          autoPath = new MoveByCommand(xTarget, m_driveAuto, 0);
-          autoPath.schedule();
-          step++;
-        }
-        //realign
-        else if (step == 3) {
-          shooter = true;
-          alignToTarget = new DictatorLocator(m_vision, m_driveAuto);
-          alignToTarget.schedule();
-          step++;
-        }
-        //SHOOT
-        else if (step == 4) {
-          if (shouldShoot) {
-            if (shooterReady) {
-              feedShooterCommand = new FeedShooterCommand(m_shooter, shootTime);
-              feedShooterCommand.schedule();
-              step++;
-            }
-          }
-          else {
-            step++;
-          }
-        }
-        //reverse
-        else if (step == 5) {
-          autoPath = new MoveByCommand(-50, m_driveAuto, 0);
-          autoPath.schedule();
-          step++;
-        }
-        //end command
-        else if (step >= 6) {
-          shooter = false;
-          isFinished = true;
-        }
-    }
-
-    // System.out.println(shooterReady);
-    
-
-    // if obstacle detected during PID ONLY
-    if (!ultraFuse.isScheduled() && !alignToTarget.isScheduled() && !feedShooterCommand.isScheduled()) {
-      //if stopping necessary
-      if ((!m_driveAuto.getTurning() && !alignToTarget.isScheduled())) {
-        autoPath.cancel();
-
-        if (m_ultra.getSensourLeft() <= m_ultra.MIN_DIS) {
-          //avoid?
         }
         else {
-          //resechedule path if obstacle avoided
-          if (xRem >= autoPathMargin || yRem >= autoPathMargin) {
-            autoPath = new MoveByCommand(xRem, m_driveAuto, 0);
-            autoPath.schedule();
-          }
+          step++;
         }
       }
-      //keep ultraFuse running to check if obstacle moves
-      ultraFuse.schedule();
+      //reverse
+      else if (step == 4) {
+        autoPath = new MoveByCommand(-50, m_driveAuto, 0);
+        autoPath.schedule();
+        step++;
+      }
+      //end command
+      else if (step >= 5) {
+        shooter = false;
+        isFinished = true;
+      }
     }
   }
 
@@ -201,7 +137,7 @@ public class AlignToShoot extends CommandBase {
     return isFinished;
   }
 
-  public void checkShooter() {
+  private void initShooter() {
     if (shooter) {
       shooterSpeed = m_shooter.getShooterVelocity()/ticksPerRev;
       m_shooter.setShooterPID(7750*ticksPerRev);
@@ -234,12 +170,9 @@ public class AlignToShoot extends CommandBase {
     }
   }
 
-  public void resetVars() {
+  private void resetVars() {
     isFinished = false;
-    left1 = false;
-    left2 = false;
     shooter = false;
     shooterReady = false;
-    loopComplete = false;
   }
 }
