@@ -146,28 +146,28 @@ public class DrivebaseSubsystem extends SubsystemBase {
       }
     }
 
-    // if (driveJoystick.getYButton()) {
-    //   Robot.cassius.setPipeline(0);
-    // }
-    // else {
-    //   Robot.cassius.setPipeline(1);
-    // }
+    if (driveJoystick.getYButton()) {
+      Robot.limelight.setPipeline(0);
+    }
+    else {
+      Robot.limelight.setPipeline(1);
+    }
 
-    // if (driveJoystick.getAButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
-    //   rumble = 0;
-    //   visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.letsShoot, Robot.cassius, 10*12, false);
-    //   visionMove.schedule();
-    //   System.out.println("Scheduling visionMove");
-    // }
-    // else if (driveJoystick.getBButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
-    //   rumble = 0;
-    //   visionRotate = new DictatorLocator(Robot.cassius, this);
-    //   visionRotate.schedule();
-    //   System.out.println("Scheduling visionRotate");
-    // }
-    // else {
-    //   rumble = 8;
-    // }
+    if (driveJoystick.getAButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
+      rumble = 0;
+      visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.gameMech, Robot.limelight, 10*12, false);
+      visionMove.schedule();
+      System.out.println("Scheduling visionMove");
+    }
+    else if (driveJoystick.getBButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
+      rumble = 0;
+      visionRotate = new RotateTowardsGoal(Robot.limelight, this);
+      visionRotate.schedule();
+      System.out.println("Scheduling visionRotate");
+    }
+    else {
+      rumble = 8;
+    }
 
     if (rumble != 0) {
       if (rumbleTime.get() > 1) {
