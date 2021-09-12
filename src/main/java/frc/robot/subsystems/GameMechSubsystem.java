@@ -56,7 +56,7 @@ public class GameMechSubsystem extends SubsystemBase {
    SmartDashboard.putBoolean("Indexering", toIndex);
    SmartDashboard.putBoolean("Shooting", toShoot);
 
-   System.out.println(shooterSpeed);
+   //System.out.println(shooterSpeed);
 
     //indexer
     if(gameJoystick.getAButton()){
