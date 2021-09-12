@@ -58,13 +58,11 @@ public class VisionFinder extends CommandBase {
   @Override
   public void execute() {
     currentAngle = (drive.getFrontLeftPosition()-startPos[0]) / targetPositionRotations;
-    System.out.println("SPEED: " + speed[0] + ", " + speed[1]);
+    //System.out.println("SPEED: " + speed[0] + ", " + speed[1]);
     Brutus.setPipeline(0);
 
     if (Brutus.isDetected()) {
       if (timerV2ElectricBoogaloo.get() > 1) isFinished = true;
-      
-      System.out.println("JULIUS CAESAR WAS STABBED 23 TIMES IN THE theater OF POMPEY YOU STUPID SENATORS WHO ALL ENDED UP DYING THANKS TO AUGUSTUS, MARK ANTONY, AND LEPIDUS!");
 
       speed[0] = 0;
       speed[1] = 0;

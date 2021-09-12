@@ -145,7 +145,7 @@ public class AlignToShoot extends CommandBase {
       boolean atSpeed = false;
       boolean timeHold = false;
 
-      System.out.println(shooterSpeed + " " + (shootRPM + shootMargin));
+      //System.out.println(shooterSpeed + " " + (shootRPM + shootMargin));
 
       if(Math.abs(shooterSpeed) >= 6300 && Math.abs(shooterSpeed) <= 6400) {
         atSpeed = true;
