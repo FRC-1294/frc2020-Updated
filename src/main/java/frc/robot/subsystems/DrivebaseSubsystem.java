@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Timer;
@@ -12,6 +11,7 @@ import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpiutil.math.MathUtil;
 import edu.wpi.first.wpilibj. XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -39,6 +39,8 @@ public class DrivebaseSubsystem extends SubsystemBase {
   public final XboxController driveJoystick = new XboxController(Constants.driveJoystick);
 
   private final double targetPositionRotations = 0.54;
+  //10 m/s to in/s
+  private final double maxSpeed = 393.701;
   private static int currentAngle;
   private static double[] amountTraveled = new double[] {0, 0};
   private final Gains defaultPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -0.5, 0.5, 0);
@@ -49,8 +51,8 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private boolean isWall;
   
   public DrivebaseSubsystem() {
-    // UsbCamera intakeCam = CameraServer.getInstance().startAutomaticCapture(0);
-    // UsbCamera indexCam = CameraServer.getInstance().startAutomaticCapture(1);
+    CameraServer.getInstance().startAutomaticCapture(0);
+    CameraServer.getInstance().startAutomaticCapture(1);
     frontLeftSpark.restoreFactoryDefaults(true);
     frontRightSpark.restoreFactoryDefaults(true);
     rearLeftSpark.restoreFactoryDefaults(true);
@@ -106,21 +108,58 @@ public class DrivebaseSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // sparkDrive.feedWatchdog();
-
     // if (driveJoystick.getBumper(Hand.kRight)) setMode("brake");
     // else setMode("coast");
 
-    if (driveJoystick.getBumperPressed(Hand.kLeft)) {
-      if (factor == 1) factor = 0.5;
-      else  factor = 1;
-    }
+    // if (driveJoystick.getBumperPressed(Hand.kLeft)) {
+    //   if (factor == 1) factor = 0.5;
+    //   else  factor = 1;
+    // }
 
-    arcadeDrive(driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kRight));
+
+    //change to kRight
+    arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kLeft));
   }
 
   public void arcadeDrive(double forward, double turn) {
-    sparkDrive.arcadeDrive(turn*0.5*factor, -forward);
+    final double deadZone = 0.05;
+    final double minPower = 0.2;
+    double leftSpeed = 0;
+    double rightSpeed = 0;
+
+    //deadzone filter
+    if (Math.abs(forward) <= deadZone) forward = 0;
+    if (Math.abs(turn) <= deadZone) turn = 0;
+
+    //square inputs for higher percision at lower velocities, with applied power
+    forward = ((1-minPower) * Math.pow(forward,2) + minPower) * getSign(forward);
+    turn = ((1-minPower) * Math.pow(turn,2) + minPower) * getSign(turn);
+
+    //differential drive logic
+    leftSpeed = forward+turn;
+    rightSpeed = forward-turn;
+
+    double factor = Double.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
+    if (factor > 1) {
+      factor = 1/factor;
+      leftSpeed *= factor;
+      rightSpeed *= factor;
+    }
+    
+    SmartDashboard.putNumber("Left", leftSpeed);
+    SmartDashboard.putNumber("Right", rightSpeed);
+
+    //apply to PID for open loop control
+    setFrontLeftPID(maxSpeed*leftSpeed*targetPositionRotations, ControlType.kVelocity, 0);
+    setFrontRightPID(maxSpeed*rightSpeed*targetPositionRotations, ControlType.kVelocity, 0);
+  }
+
+  //returns +1 or -1 based on num's sign
+  private double getSign(double num) {
+    double sign = num/Math.abs(num);
+    if (Double.isNaN(sign)) sign = 0;
+
+    return sign;
   }
 
   public void stop() {
