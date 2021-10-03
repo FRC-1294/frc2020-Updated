@@ -131,9 +131,9 @@ public class DrivebaseSubsystem extends SubsystemBase {
     if (Math.abs(forward) <= deadZone) forward = 0;
     if (Math.abs(turn) <= deadZone) turn = 0;
 
-    //square inputs for higher percision at lower velocities, with applied power
-    forward = ((1-minPower) * Math.pow(forward,2) + minPower) * getSign(forward);
-    turn = ((1-minPower) * Math.pow(turn,2) + minPower) * getSign(turn);
+    //apply power to inputs for higher percision at lower velocities, with applied power
+    forward = ((1-minPower) * Math.pow(forward, 8/3) + minPower) * getSign(forward);
+    turn = ((1-minPower) * Math.pow(turn, 8/3) + minPower) * getSign(turn);
 
     //differential drive logic
     leftSpeed = forward+turn;
