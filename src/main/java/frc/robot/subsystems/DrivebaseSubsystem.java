@@ -12,7 +12,7 @@ import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj. XboxController;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -20,8 +20,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Gains;
 import frc.robot.Robot;
-import frc.robot.commands.AlignToShoot;
-import frc.robot.commands.RotateTowardsGoal;
+// import frc.robot.commands.AlignToShoot;
+// import frc.robot.commands.RotateTowardsGoal;
 
 public class DrivebaseSubsystem extends SubsystemBase {
   //Spark diff drive init
@@ -51,13 +51,13 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private boolean isTurning = false;
   private int rumble = 0;
   private double factor = 1;
-  private AlignToShoot visionMove;
-  private RotateTowardsGoal visionRotate;
+  // private AlignToShoot visionMove;
+  // private RotateTowardsGoal visionRotate;
   private boolean isWall;
   
   public DrivebaseSubsystem() {
-    UsbCamera intakeCam = CameraServer.getInstance().startAutomaticCapture(0);
-    UsbCamera indexCam = CameraServer.getInstance().startAutomaticCapture(1);
+    CameraServer.getInstance().startAutomaticCapture(0);
+    CameraServer.getInstance().startAutomaticCapture(1);
     frontLeftSpark.restoreFactoryDefaults(true);
     frontRightSpark.restoreFactoryDefaults(true);
     rearLeftSpark.restoreFactoryDefaults(true);
@@ -105,8 +105,8 @@ public class DrivebaseSubsystem extends SubsystemBase {
     rearLeftSpark.follow(frontLeftSpark);
     rearRightSpark.follow(frontRightSpark);
 
-    visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.gameMech, Robot.limelight, 5*12, false);
-    visionRotate = new RotateTowardsGoal(Robot.limelight, this);
+    // visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.gameMech, Robot.limelight, 5*12, false);
+    // visionRotate = new RotateTowardsGoal(Robot.limelight, this);
 
     timer.start();
     rumbleTime.start();
@@ -119,16 +119,16 @@ public class DrivebaseSubsystem extends SubsystemBase {
     SmartDashboard.putString("AmountTraveled", getAmountTraveled(0) + " , " + getAmountTraveled(1));
     SmartDashboard.putNumber("currentAngle", getCurrentAngle());
     SmartDashboard.putNumber("encoder", getFrontLeftPosition());
-    SmartDashboard.putNumber("Ultrasonic Value", Robot.ultrasonic.getSensourLeft());
+    // SmartDashboard.putNumber("Ultrasonic Value", Robot.ultrasonic.getSensourLeft());
 
-    if (driveJoystick.getStartButtonPressed()) {
-      if (visionMove.isScheduled()) {
-        visionMove.cancel();
-      }
-      if (visionRotate.isScheduled()) {
-        visionRotate.cancel();
-      }
-    }
+    // if (driveJoystick.getStartButtonPressed()) {
+    //   // if (visionMove.isScheduled()) {
+    //   //   visionMove.cancel();
+    //   // }
+    //   if (visionRotate.isScheduled()) {
+    //     visionRotate.cancel();
+    //   }
+    // }
 
     if (driveJoystick.getBumper(Hand.kRight)) {
       setMode("brake");
@@ -137,37 +137,33 @@ public class DrivebaseSubsystem extends SubsystemBase {
       setMode("coast");
     }
 
-    if (driveJoystick.getBumperPressed(Hand.kLeft)) {
-      if (factor == 1) {
-        factor = 0.5;
-      }
-      else {
-        factor = 1;
-      }
+    if (driveJoystick.getBumper(Hand.kLeft)) {
+      if (factor == 1) factor = 0.6;
+      else factor = 1;
     }
 
-    if (driveJoystick.getYButton()) {
-      Robot.limelight.setPipeline(0);
-    }
-    else {
-      Robot.limelight.setPipeline(1);
-    }
+    // if (driveJoystick.getYButton()) {
+    //   Robot.limelight.setPipeline(0);
+    // }
+    // else {
+    //   Robot.limelight.setPipeline(1);
+    // }
 
-    if (driveJoystick.getAButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
-      rumble = 0;
-      visionMove = new AlignToShoot(this, Robot.ultrasonic, Robot.gameMech, Robot.limelight, 10*12, false);
-      visionMove.schedule();
-      System.out.println("Scheduling visionMove");
-    }
-    else if (driveJoystick.getBButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
-      rumble = 0;
-      visionRotate = new RotateTowardsGoal(Robot.limelight, this);
-      visionRotate.schedule();
-      System.out.println("Scheduling visionRotate");
-    }
-    else {
-      rumble = 8;
-    }
+    // if (driveJoystick.getAButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
+    //   rumble = 0;
+    //   visionMove = new AutoShoot(this, Robot.ultrasonic, Robot.gameMech, Robot.limelight, 10*12, false);
+    //   visionMove.schedule();
+    //   System.out.println("Scheduling visionMove");
+    // }
+    // else if (driveJoystick.getBButtonPressed() && !visionMove.isScheduled() && !visionRotate.isScheduled()) {
+    //   rumble = 0;
+    //   visionRotate = new RotateTowardsGoal(Robot.limelight, this);
+    //   visionRotate.schedule();
+    //   System.out.println("Scheduling visionRotate");
+    // }
+    // else {
+    //   rumble = 8;
+    // }
 
     if (rumble != 0) {
       if (rumbleTime.get() > 1) {
@@ -183,7 +179,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
   }
 
   public void arcadeDrive(double forward, double turn) {
-    sparkDrive.arcadeDrive(turn*0.5*factor, -forward);
+    sparkDrive.arcadeDrive(turn*0.5*factor, -forward*factor);
   }
 
   public void setWall(boolean thiss){

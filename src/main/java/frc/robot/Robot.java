@@ -1,9 +1,10 @@
 package frc.robot;
 
-import frc.robot.commands.RotateTowardsGoal;
+// import frc.robot.commands.RotateTowardsGoal;
+import frc.robot.commands.AutoShoot;
 import frc.robot.commands.MoveByCommand;
-import frc.robot.subsystems.DistanceSubsystem;
-import frc.robot.subsystems.LimeLightSubsystem;
+// import frc.robot.subsystems.DistanceSubsystem;
+// import frc.robot.subsystems.LimeLightSubsystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -18,8 +19,8 @@ import frc.robot.subsystems.GameMechSubsystem;
  */
 public class Robot extends TimedRobot {
   public static Command m_autonomousCommand;
-  public static DistanceSubsystem ultrasonic;
-  public static LimeLightSubsystem limelight;
+  // public static DistanceSubsystem ultrasonic;
+  // public static LimeLightSubsystem limelight;
   public static GameMechSubsystem gameMech;
   public static DrivebaseSubsystem driveBase;
   public static MoveByCommand chacharealmooth;
@@ -35,15 +36,15 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     gameMech = new GameMechSubsystem();
     driveBase = new DrivebaseSubsystem();
-    ultrasonic = new DistanceSubsystem();
-    limelight = new LimeLightSubsystem();
+    // ultrasonic = new DistanceSubsystem();
+    // limelight = new LimeLightSubsystem();
     
     driveBase.setFrontLeftSpeed(0);
     driveBase.setFrontRightSpeed(0);
     driveBase.setRearLeftSpeed(0); 
     driveBase.setRearRightSpeed(0);
     gameMech.setZero();
-    limelight.setPipeline(1);
+    // limelight.setPipeline(1);
   }
   
   @Override
@@ -59,7 +60,7 @@ public class Robot extends TimedRobot {
     driveBase.setRearLeftSpeed(0);
     driveBase.setRearRightSpeed(0);
     gameMech.setZero();
-    limelight.setPipeline(1);
+    // limelight.setPipeline(1);
   }
 
   @Override
@@ -69,7 +70,7 @@ public class Robot extends TimedRobot {
     driveBase.setRearLeftSpeed(0); 
     driveBase.setRearRightSpeed(0);
     gameMech.setZero();
-    limelight.setPipeline(1);
+    // limelight.setPipeline(1);
   }
 
   /**
@@ -77,7 +78,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = new RotateTowardsGoal(limelight, driveBase);//new TurnByCommand(360, m_driveAuto, 0);//new AlignToShoot(m_driveAuto, ultrasonic, letsShoot, cassius, 112, true);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);
+    //m_autonomousCommand = new RotateTowardsGoal(limelight, driveBase);//new TurnByCommand(360, m_driveAuto, 0);//new AlignToShoot(m_driveAuto, ultrasonic, letsShoot, cassius, 112, true);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);//new AutoNavCommand(m_driveAuto, ultrasonic, letsShoot, cassius);
+    m_autonomousCommand = new AutoShoot(driveBase, gameMech);
 
     // schedule the autonomous command (example)
     if (!m_autonomousCommand.isScheduled()) {
@@ -104,8 +106,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    ultrasonic.close();
-
+    // ultrasonic.close();
   }
 
   /**
