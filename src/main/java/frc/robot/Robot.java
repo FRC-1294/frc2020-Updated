@@ -1,6 +1,5 @@
 package frc.robot;
 
-import frc.robot.commands.MoveByCommand;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.DrivebaseSubsystem;
@@ -15,7 +14,6 @@ import frc.robot.subsystems.GameMechSubsystem;
 public class Robot extends TimedRobot {
   public static GameMechSubsystem gameMech;
   public static DrivebaseSubsystem driveBase;
-  public static MoveByCommand chacharealmooth;
 
   public static boolean inAuto = false;
  

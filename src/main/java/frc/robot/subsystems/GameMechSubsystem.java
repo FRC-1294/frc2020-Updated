@@ -113,7 +113,7 @@ public class GameMechSubsystem extends SubsystemBase {
     }
     
     //shooter PID
-    if (toShoot) shooter.set(TalonFXControlMode.Velocity, currentSpeed * ticksPerRev);
+    if (toShoot) setShooterPID(currentSpeed);
     else  setFXSpeed(shooter, 0);
 
     if (gameJoystick.getYButtonPressed()) {
@@ -153,7 +153,7 @@ public class GameMechSubsystem extends SubsystemBase {
   }
 
   public void setShooterPID(double velocity) {
-    shooter.set(TalonFXControlMode.Velocity, velocity);
+    shooter.set(TalonFXControlMode.Velocity, velocity * ticksPerRev);
   }
 
   public void setShooter(double speed) {
@@ -161,7 +161,7 @@ public class GameMechSubsystem extends SubsystemBase {
   }
 
   public double getShooterVelocity() {
-    return shooter.getSelectedSensorVelocity();
+    return shooter.getSelectedSensorVelocity() / ticksPerRev;
   }
 
   public void setZero() {

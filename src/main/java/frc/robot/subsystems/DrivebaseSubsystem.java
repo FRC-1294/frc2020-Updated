@@ -107,16 +107,21 @@ public class DrivebaseSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    //change to kRight
+    //TODO: change to kRight
     arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kLeft), driveJoystick.getBumper(Hand.kLeft));
 
     SmartDashboard.putNumber("frontLeft Velocity", frontLeftSpark.getEncoder().getVelocity());
     SmartDashboard.putNumber("frontRight Velocity", frontRightSpark.getEncoder().getVelocity());
 
+    //TODO: adjust ramp rates
+    //TODO: view velocities, change accordingly! Maybe add PID if there's time? 
+    //TODO: check shooter PID and test AUTO!
     if (frontLeftSpark.getEncoder().getVelocity() <= 0.5 && frontRightSpark.getEncoder().getVelocity() <= 0.5) {
       setMode(idleMode.brake);
     }
-    else setMode(idleMode.coast);
+    else {
+      setMode(idleMode.coast);
+    }
   }
 
   private enum idleMode {
