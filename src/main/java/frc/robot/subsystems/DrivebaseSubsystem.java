@@ -47,7 +47,6 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private final Gains lowDisPID  = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0,   -1,   1, 1);
   private Timer timer = new Timer();
   private boolean isTurning = false;
-  private double factor = 1;
   private boolean isWall;
   
   public DrivebaseSubsystem() {
@@ -89,7 +88,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
     setPidControllers(frontRightPID, lowDisPID, lowDisPID.kSlot);
     setPidControllers(rearLeftPID, lowDisPID, lowDisPID.kSlot);
     setPidControllers(rearRightPID, lowDisPID, lowDisPID.kSlot);
-    setMode("coast");
+    setMode(idleMode.coast);
 
     frontLeftSpark.setInverted(false);
     frontRightSpark.setInverted(true);
@@ -108,20 +107,24 @@ public class DrivebaseSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // if (driveJoystick.getBumper(Hand.kRight)) setMode("brake");
-    // else setMode("coast");
-
-    // if (driveJoystick.getBumperPressed(Hand.kLeft)) {
-    //   if (factor == 1) factor = 0.5;
-    //   else  factor = 1;
-    // }
-
-
     //change to kRight
-    arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kLeft));
+    arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kLeft), driveJoystick.getBumper(Hand.kLeft));
+
+    SmartDashboard.putNumber("frontLeft Velocity", frontLeftSpark.getEncoder().getVelocity());
+    SmartDashboard.putNumber("frontRight Velocity", frontRightSpark.getEncoder().getVelocity());
+
+    if (frontLeftSpark.getEncoder().getVelocity() <= 0.5 && frontRightSpark.getEncoder().getVelocity() <= 0.5) {
+      setMode(idleMode.brake);
+    }
+    else setMode(idleMode.coast);
   }
 
-  public void arcadeDrive(double forward, double turn) {
+  private enum idleMode {
+    brake,
+    coast
+  }
+
+  public void arcadeDrive(double forward, double turn, boolean precise) {
     final double deadZone = 0.05;
     final double minPower = 0.2;
     final double minTurn = 0.2;
@@ -132,6 +135,9 @@ public class DrivebaseSubsystem extends SubsystemBase {
     //deadzone filter
     if (Math.abs(forward) <= deadZone) forward = 0;
     if (Math.abs(turn) <= deadZone) turn = 0;
+
+    //precision mode
+    if (precise) turn *= 0.6;
 
     //dynamic turn sensititvity and offset adjustments
     double turnFactor = (1-minTurn) * Math.pow(1-Math.pow(forward, 8/3), 6) + minTurn;
@@ -151,15 +157,12 @@ public class DrivebaseSubsystem extends SubsystemBase {
       leftSpeed *= factor;
       rightSpeed *= factor;
     }
-    
-    SmartDashboard.putNumber("Left", leftSpeed);
-    SmartDashboard.putNumber("Right", rightSpeed);
-    SmartDashboard.putNumber("Turn Factor", turnFactor);
-    SmartDashboard.putNumber("Turn", turn);
 
     //apply to PID for open loop control
-    setFrontLeftPID(maxSpeed*leftSpeed*targetPositionRotations, ControlType.kVelocity, 0);
-    setFrontRightPID(maxSpeed*rightSpeed*targetPositionRotations, ControlType.kVelocity, 0);
+    // setFrontLeftPID(maxSpeed*leftSpeed*targetPositionRotations, ControlType.kVelocity, 0);
+    // setFrontRightPID(maxSpeed*rightSpeed*targetPositionRotations, ControlType.kVelocity, 0);
+    frontLeftSpark.set(leftSpeed);
+    frontRightSpark.set(rightSpeed);
     sparkDrive.feed();
   }
 
@@ -191,13 +194,13 @@ public class DrivebaseSubsystem extends SubsystemBase {
     isTurning = val;
   }
 
-  public void setMode(String type) {
-    if (type == "brake") {
+  public void setMode(idleMode type) {
+    if (type == idleMode.brake) {
       frontLeftSpark.setIdleMode(IdleMode.kBrake);
       frontRightSpark.setIdleMode(IdleMode.kBrake);
       rearLeftSpark.setIdleMode(IdleMode.kBrake);
       rearRightSpark.setIdleMode(IdleMode.kBrake);
-    } else if (type == "coast") {
+    } else if (type == idleMode.coast) {
       frontLeftSpark.setIdleMode(IdleMode.kCoast);
       frontRightSpark.setIdleMode(IdleMode.kCoast);
       rearLeftSpark.setIdleMode(IdleMode.kCoast);
