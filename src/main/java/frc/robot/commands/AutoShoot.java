@@ -32,7 +32,6 @@ public class AutoShoot extends CommandBase {
   double shooterSpeed;
 
   final int shootDis = 110;
-  final double ticksPerRev = -2.59;
   final double shootRPM = 6300;
   final int shootMargin = 50;
   final double shootTime = 5.0;
@@ -104,13 +103,11 @@ public class AutoShoot extends CommandBase {
   }
 
   private void initShooter() {
-    shooterSpeed = m_shooter.getShooterVelocity()/ticksPerRev;
-    m_shooter.setShooterPID(9100*ticksPerRev);
+    shooterSpeed = m_shooter.getShooterVelocity();
+    m_shooter.setShooterPID(6300);
 
     boolean atSpeed = false;
     boolean timeHold = false;
-
-    //System.out.println(shooterSpeed + " " + (shootRPM + shootMargin));
 
     if(Math.abs(shooterSpeed) >= 6200 && Math.abs(shooterSpeed) <= 6400) {
       atSpeed = true;
