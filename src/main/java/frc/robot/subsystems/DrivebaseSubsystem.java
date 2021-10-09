@@ -124,6 +124,8 @@ public class DrivebaseSubsystem extends SubsystemBase {
   public void arcadeDrive(double forward, double turn) {
     final double deadZone = 0.05;
     final double minPower = 0.2;
+    final double minTurn = 0.2;
+    final double maxTurnOffset = 0.1 * getSign(forward);
     double leftSpeed = 0;
     double rightSpeed = 0;
 
@@ -131,9 +133,13 @@ public class DrivebaseSubsystem extends SubsystemBase {
     if (Math.abs(forward) <= deadZone) forward = 0;
     if (Math.abs(turn) <= deadZone) turn = 0;
 
+    //dynamic turn sensititvity and offset adjustments
+    double turnFactor = (1-minTurn) * Math.pow(1-Math.pow(forward, 8/3), 6) + minTurn;
+    double turnOffset = Math.pow(forward, 2) * maxTurnOffset;
+
     //apply power to inputs for higher percision at lower velocities, with applied power
     forward = ((1-minPower) * Math.pow(forward, 8/3) + minPower) * getSign(forward);
-    turn = ((1-minPower) * Math.pow(turn, 8/3) + minPower) * getSign(turn);
+    turn = ((1-minPower) * Math.pow(turn, 8/3) + minPower) * getSign(turn) * turnFactor + turnOffset;
 
     //differential drive logic
     leftSpeed = forward+turn;
@@ -148,10 +154,13 @@ public class DrivebaseSubsystem extends SubsystemBase {
     
     SmartDashboard.putNumber("Left", leftSpeed);
     SmartDashboard.putNumber("Right", rightSpeed);
+    SmartDashboard.putNumber("Turn Factor", turnFactor);
+    SmartDashboard.putNumber("Turn", turn);
 
     //apply to PID for open loop control
     setFrontLeftPID(maxSpeed*leftSpeed*targetPositionRotations, ControlType.kVelocity, 0);
     setFrontRightPID(maxSpeed*rightSpeed*targetPositionRotations, ControlType.kVelocity, 0);
+    sparkDrive.feed();
   }
 
   //returns +1 or -1 based on num's sign
