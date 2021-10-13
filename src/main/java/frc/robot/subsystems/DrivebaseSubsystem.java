@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -45,6 +46,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private static double[] amountTraveled = new double[] {0, 0};
   private final Gains defaultPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -0.5, 0.5, 0);
   private final Gains lowDisPID  = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0,   -1,   1, 1);
+  private final PIDController arcadeTurningPID = new PIDController(0.05, 0.00001, 0.7);
   private Timer timer = new Timer();
   private boolean isTurning = false;
   private boolean isWall;
@@ -57,11 +59,6 @@ public class DrivebaseSubsystem extends SubsystemBase {
     rearLeftSpark.restoreFactoryDefaults(true);
     rearRightSpark.restoreFactoryDefaults(true);
 
-    // frontLeftSpark.setMotorType(MotorType.kBrushless);
-    // frontRightSpark.setMotorType(MotorType.kBrushless);
-    // rearLeftSpark.setMotorType(MotorType.kBrushless);
-    // rearRightSpark.setMotorType(MotorType.kBrushless);
-
     frontLeftSpark.getEncoder();
     frontRightSpark.getEncoder();
     rearLeftSpark.getEncoder();
@@ -72,14 +69,9 @@ public class DrivebaseSubsystem extends SubsystemBase {
     rearLeftSpark.setSmartCurrentLimit(60);
     rearRightSpark.setSmartCurrentLimit(60);
 
-    frontLeftSpark.setOpenLoopRampRate(1);
-    frontRightSpark.setOpenLoopRampRate(1);
-    frontLeftSpark.setClosedLoopRampRate(1);
-    frontRightSpark.setClosedLoopRampRate(1);
-    rearLeftSpark.setClosedLoopRampRate(1);
-    rearRightSpark.setClosedLoopRampRate(1);
-    rearLeftSpark.setClosedLoopRampRate(1);
-    rearRightSpark.setClosedLoopRampRate(1);
+    setRampRates(0.5);
+    setMode(idleMode.coast);
+
     setPidControllers(frontLeftPID, defaultPID, defaultPID.kSlot);
     setPidControllers(frontRightPID, defaultPID, defaultPID.kSlot);
     setPidControllers(rearLeftPID, defaultPID, defaultPID.kSlot);
@@ -88,7 +80,6 @@ public class DrivebaseSubsystem extends SubsystemBase {
     setPidControllers(frontRightPID, lowDisPID, lowDisPID.kSlot);
     setPidControllers(rearLeftPID, lowDisPID, lowDisPID.kSlot);
     setPidControllers(rearRightPID, lowDisPID, lowDisPID.kSlot);
-    setMode(idleMode.coast);
 
     frontLeftSpark.setInverted(false);
     frontRightSpark.setInverted(true);
@@ -110,8 +101,8 @@ public class DrivebaseSubsystem extends SubsystemBase {
     //TODO: change to kRight
     arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kLeft), driveJoystick.getBumper(Hand.kLeft));
 
-    SmartDashboard.putNumber("frontLeft Velocity", frontLeftSpark.getEncoder().getVelocity());
-    SmartDashboard.putNumber("frontRight Velocity", frontRightSpark.getEncoder().getVelocity());
+    SmartDashboard.putNumber("Velocity: frontLeft", frontLeftSpark.getEncoder().getVelocity());
+    SmartDashboard.putNumber("Velocity: frontRight", frontRightSpark.getEncoder().getVelocity());
 
     //TODO: adjust ramp rates
     //TODO: view velocities, change accordingly! Maybe add PID if there's time? 
@@ -140,13 +131,18 @@ public class DrivebaseSubsystem extends SubsystemBase {
     //deadzone filter
     if (Math.abs(forward) <= deadZone) forward = 0;
     if (Math.abs(turn) <= deadZone) turn = 0;
-
     //precision mode
     if (precise) turn *= 0.6;
 
     //dynamic turn sensititvity and offset adjustments
     double turnFactor = (1-minTurn) * Math.pow(1-Math.pow(forward, 8/3), 6) + minTurn;
     double turnOffset = Math.pow(forward, 2) * maxTurnOffset;
+
+    //calculate turn correction PID
+    double turnCorrection = arcadeTurningPID.calculate(Math.abs(frontLeftSpark.getEncoder().getVelocity())-Math.abs(frontRightSpark.getEncoder().getVelocity()), 0);
+
+    // if (turnCorrection > 1) turnCorrection = 1;
+    // if (turnCorrection < -1) turnCorrection = -1;
 
     //apply power to inputs for higher percision at lower velocities, with applied power
     forward = ((1-minPower) * Math.pow(forward, 8/3) + minPower) * getSign(forward);
@@ -162,6 +158,10 @@ public class DrivebaseSubsystem extends SubsystemBase {
       leftSpeed *= factor;
       rightSpeed *= factor;
     }
+    
+    SmartDashboard.putNumber("Input: frontLeft", leftSpeed);
+    SmartDashboard.putNumber("Input: frontRight", rightSpeed);
+    SmartDashboard.putNumber("PID: turn correction", turnCorrection);
 
     //apply to PID for open loop control
     // setFrontLeftPID(maxSpeed*leftSpeed*targetPositionRotations, ControlType.kVelocity, 0);
@@ -177,6 +177,20 @@ public class DrivebaseSubsystem extends SubsystemBase {
     if (Double.isNaN(sign)) sign = 0;
 
     return sign;
+  }
+
+  public void setRampRates(double time) {
+    frontLeftSpark.setOpenLoopRampRate(time);
+    frontLeftSpark.setClosedLoopRampRate(time);
+
+    frontRightSpark.setOpenLoopRampRate(time);
+    frontRightSpark.setClosedLoopRampRate(time);
+
+    rearLeftSpark.setOpenLoopRampRate(time);
+    rearLeftSpark.setClosedLoopRampRate(time);
+
+    rearRightSpark.setOpenLoopRampRate(time);
+    rearRightSpark.setClosedLoopRampRate(time);
   }
 
   public void stop() {
