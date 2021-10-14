@@ -12,7 +12,6 @@ import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpiutil.math.MathUtil;
 import edu.wpi.first.wpilibj. XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -32,21 +31,22 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private CANSparkMax rearRightSpark = new CANSparkMax(Constants.rearRightSpark, MotorType.kBrushless);
   private CANPIDController rearRightPID = rearRightSpark.getPIDController();
 
-  private SpeedControllerGroup sparkDriveLeft = new SpeedControllerGroup(frontLeftSpark, rearLeftSpark);
-  private SpeedControllerGroup sparkDriveRight = new SpeedControllerGroup(frontRightSpark, rearRightSpark);
-  private DifferentialDrive sparkDrive = new DifferentialDrive(sparkDriveLeft,sparkDriveRight);
+  // private SpeedControllerGroup sparkDriveLeft = new SpeedControllerGroup(frontLeftSpark, rearLeftSpark);
+  // private SpeedControllerGroup sparkDriveRight = new SpeedControllerGroup(frontRightSpark, rearRightSpark);
+  // private DifferentialDrive sparkDrive = new DifferentialDrive(sparkDriveLeft,sparkDriveRight);
 
   //control init
   public final XboxController driveJoystick = new XboxController(Constants.driveJoystick);
 
   private final double targetPositionRotations = 0.54;
   //10 m/s to in/s
-  private final double maxSpeed = 393.701;
+  private final double maxSpeed = 5500;
   private static int currentAngle;
   private static double[] amountTraveled = new double[] {0, 0};
   private final Gains defaultPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -0.5, 0.5, 0);
   private final Gains lowDisPID  = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0,   -1,   1, 1);
-  private final PIDController arcadeTurningPID = new PIDController(0.05, 0.00001, 0.7);
+  private final Gains velocityPID  = new Gains(0.0005, 0, 0, 0, 0.0, -1, 1, 2);
+  // private final PIDController arcadeTurningPID = new PIDController(0.05, 0.00001, 0.7);
   private Timer timer = new Timer();
   private boolean isTurning = false;
   private boolean isWall;
@@ -76,10 +76,16 @@ public class DrivebaseSubsystem extends SubsystemBase {
     setPidControllers(frontRightPID, defaultPID, defaultPID.kSlot);
     setPidControllers(rearLeftPID, defaultPID, defaultPID.kSlot);
     setPidControllers(rearRightPID, defaultPID, defaultPID.kSlot);
+
     setPidControllers(frontLeftPID, lowDisPID, lowDisPID.kSlot);
     setPidControllers(frontRightPID, lowDisPID, lowDisPID.kSlot);
     setPidControllers(rearLeftPID, lowDisPID, lowDisPID.kSlot);
     setPidControllers(rearRightPID, lowDisPID, lowDisPID.kSlot);
+
+    setPidControllers(frontLeftPID, velocityPID, velocityPID.kSlot);
+    setPidControllers(frontRightPID, velocityPID, velocityPID.kSlot);
+    setPidControllers(rearLeftPID, velocityPID, velocityPID.kSlot);
+    setPidControllers(rearRightPID, velocityPID, velocityPID.kSlot);
 
     frontLeftSpark.setInverted(false);
     frontRightSpark.setInverted(true);
@@ -98,21 +104,16 @@ public class DrivebaseSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    //TODO: change to kRight
-    arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kLeft), driveJoystick.getBumper(Hand.kLeft));
+    arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kRight), driveJoystick.getBumper(Hand.kLeft));
 
-    SmartDashboard.putNumber("Velocity: frontLeft", frontLeftSpark.getEncoder().getVelocity());
-    SmartDashboard.putNumber("Velocity: frontRight", frontRightSpark.getEncoder().getVelocity());
-
-    //TODO: adjust ramp rates
     //TODO: view velocities, change accordingly! Maybe add PID if there's time? 
     //TODO: check shooter PID and test AUTO!
-    if (frontLeftSpark.getEncoder().getVelocity() <= 0.5 && frontRightSpark.getEncoder().getVelocity() <= 0.5) {
-      setMode(idleMode.brake);
-    }
-    else {
-      setMode(idleMode.coast);
-    }
+    // if (frontLeftSpark.getEncoder().getVelocity() <= 0.5 && frontRightSpark.getEncoder().getVelocity() <= 0.5) {
+    //   setMode(idleMode.brake);
+    // }
+    // else {
+    //   setMode(idleMode.coast);
+    // }
   }
 
   private enum idleMode {
@@ -123,10 +124,14 @@ public class DrivebaseSubsystem extends SubsystemBase {
   public void arcadeDrive(double forward, double turn, boolean precise) {
     final double deadZone = 0.05;
     final double minPower = 0.2;
-    final double minTurn = 0.2;
+    final double minTurn = 0.05;
+    final double fastestTurn = 0.2;
     final double maxTurnOffset = 0.1 * getSign(forward);
+    
     double leftSpeed = 0;
     double rightSpeed = 0;
+    
+    SmartDashboard.putNumber("Input: turn", turn);
 
     //deadzone filter
     if (Math.abs(forward) <= deadZone) forward = 0;
@@ -135,18 +140,18 @@ public class DrivebaseSubsystem extends SubsystemBase {
     if (precise) turn *= 0.6;
 
     //dynamic turn sensititvity and offset adjustments
-    double turnFactor = (1-minTurn) * Math.pow(1-Math.pow(forward, 8/3), 6) + minTurn;
-    double turnOffset = Math.pow(forward, 2) * maxTurnOffset;
+    double turnFactor = (1-fastestTurn) * Math.pow(1-Math.pow(fastestTurn, 8/3), 6) + minTurn;
+    //double turnOffset = Math.pow(forward, 2) * maxTurnOffset;
 
     //calculate turn correction PID
-    double turnCorrection = arcadeTurningPID.calculate(Math.abs(frontLeftSpark.getEncoder().getVelocity())-Math.abs(frontRightSpark.getEncoder().getVelocity()), 0);
+    //double turnCorrection = arcadeTurningPID.calculate(Math.abs(frontLeftSpark.getEncoder().getVelocity())-Math.abs(frontRightSpark.getEncoder().getVelocity()), 0);
 
     // if (turnCorrection > 1) turnCorrection = 1;
     // if (turnCorrection < -1) turnCorrection = -1;
 
     //apply power to inputs for higher percision at lower velocities, with applied power
-    forward = ((1-minPower) * Math.pow(forward, 8/3) + minPower) * getSign(forward);
-    turn = ((1-minPower) * Math.pow(turn, 8/3) + minPower) * getSign(turn) * turnFactor + turnOffset;
+    forward = ((1-minPower) * Math.abs(Math.pow(forward, 8/3)) + minPower) * getSign(forward);
+    turn = ((1-minTurn) * Math.abs(Math.pow(turn, 8/3)) + minTurn) * getSign(turn) * turnFactor;// * getSign(turn);// + turnOffset;
 
     //differential drive logic
     leftSpeed = forward+turn;
@@ -159,16 +164,14 @@ public class DrivebaseSubsystem extends SubsystemBase {
       rightSpeed *= factor;
     }
     
-    SmartDashboard.putNumber("Input: frontLeft", leftSpeed);
-    SmartDashboard.putNumber("Input: frontRight", rightSpeed);
-    SmartDashboard.putNumber("PID: turn correction", turnCorrection);
+    SmartDashboard.putNumber("Output: turn", turn);
 
     //apply to PID for open loop control
-    // setFrontLeftPID(maxSpeed*leftSpeed*targetPositionRotations, ControlType.kVelocity, 0);
-    // setFrontRightPID(maxSpeed*rightSpeed*targetPositionRotations, ControlType.kVelocity, 0);
     frontLeftSpark.set(leftSpeed);
     frontRightSpark.set(rightSpeed);
-    sparkDrive.feed();
+    // setFrontLeftPID(maxSpeed*leftSpeed, ControlType.kVelocity, velocityPID.kSlot);
+    // setFrontRightPID(maxSpeed*rightSpeed, ControlType.kVelocity, velocityPID.kSlot);
+    // sparkDrive.feed();
   }
 
   //returns +1 or -1 based on num's sign
@@ -194,7 +197,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    sparkDrive.arcadeDrive(0, 0);
+    // sparkDrive.arcadeDrive(0, 0);
     setFrontLeftSpeed(0);
     setFrontRightSpeed(0);
     setRearLeftSpeed(0);
