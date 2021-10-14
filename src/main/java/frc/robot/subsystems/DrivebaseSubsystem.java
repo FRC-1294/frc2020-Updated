@@ -137,11 +137,6 @@ public class DrivebaseSubsystem extends SubsystemBase {
       setMode("coast");
     }
 
-    if (driveJoystick.getBumper(Hand.kLeft)) {
-      if (factor == 1) factor = 0.6;
-      else factor = 1;
-    }
-
     // if (driveJoystick.getYButton()) {
     //   Robot.limelight.setPipeline(0);
     // }
@@ -174,12 +169,75 @@ public class DrivebaseSubsystem extends SubsystemBase {
       rumbleTime.reset();
     }
 
-    arcadeDrive(driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kRight));
+    arcadeDrive(-driveJoystick.getY(Hand.kLeft), driveJoystick.getX(Hand.kRight), 
+    driveJoystick.getBumper(Hand.kLeft));
     driveJoystick.setRumble(RumbleType.kLeftRumble, rumble);
   }
 
-  public void arcadeDrive(double forward, double turn) {
-    sparkDrive.arcadeDrive(turn*0.5*factor, -forward*factor);
+  private enum idleMode {
+    brake,
+    coast
+  }
+
+  public void arcadeDrive(double forward, double turn, boolean precise) {
+    final double deadZone = 0.05;
+    final double minPower = 0.2;
+    final double minTurn = 0.05;
+    final double fastestTurn = 0.2;
+    final double maxTurnOffset = 0.1 * getSign(forward);
+    
+    double leftSpeed = 0;
+    double rightSpeed = 0;
+    
+    SmartDashboard.putNumber("Input: turn", turn);
+
+    //deadzone filter
+    if (Math.abs(forward) <= deadZone) forward = 0;
+    if (Math.abs(turn) <= deadZone) turn = 0;
+    //precision mode
+    if (precise) turn *= 0.6;
+
+    //dynamic turn sensititvity and offset adjustments
+    double turnFactor = (1-fastestTurn) * Math.pow(1-Math.pow(fastestTurn, 8/3), 6) + minTurn;
+    //double turnOffset = Math.pow(forward, 2) * maxTurnOffset;
+
+    //calculate turn correction PID
+    //double turnCorrection = arcadeTurningPID.calculate(Math.abs(frontLeftSpark.getEncoder().getVelocity())-Math.abs(frontRightSpark.getEncoder().getVelocity()), 0);
+
+    // if (turnCorrection > 1) turnCorrection = 1;
+    // if (turnCorrection < -1) turnCorrection = -1;
+
+    //apply power to inputs for higher percision at lower velocities, with applied power
+    forward = ((1-minPower) * Math.abs(Math.pow(forward, 8/3)) + minPower) * getSign(forward);
+    turn = ((1-minTurn) * Math.abs(Math.pow(turn, 8/3)) + minTurn) * getSign(turn) * turnFactor;// * getSign(turn);// + turnOffset;
+
+    //differential drive logic
+    leftSpeed = forward+turn;
+    rightSpeed = forward-turn;
+
+    double factor = Double.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
+    if (factor > 1) {
+      factor = 1/factor;
+      leftSpeed *= factor;
+      rightSpeed *= factor;
+    }
+    
+    SmartDashboard.putNumber("Output: turn", turn);
+
+    //apply to PID for open loop control
+    frontLeftSpark.set(leftSpeed);
+    frontRightSpark.set(rightSpeed);
+    // setFrontLeftPID(maxSpeed*leftSpeed, ControlType.kVelocity, velocityPID.kSlot);
+    // setFrontRightPID(maxSpeed*rightSpeed, ControlType.kVelocity, velocityPID.kSlot);
+    // sparkDrive.feed();
+  }
+
+  //returns +1 or -1 based on num's sign
+  private double getSign(double num) {
+    double sign = num/Math.abs(num);
+    if (Double.isNaN(sign)) sign = 0;
+
+    return sign;
   }
 
   public void setWall(boolean thiss){

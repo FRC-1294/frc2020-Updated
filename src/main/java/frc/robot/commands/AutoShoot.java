@@ -104,7 +104,7 @@ public class AutoShoot extends CommandBase {
 
   private void initShooter() {
     shooterSpeed = m_shooter.getShooterVelocity();
-    m_shooter.setShooterPID(6300);
+    m_shooter.setShooterPID(4000);
 
     boolean atSpeed = false;
     boolean timeHold = false;
