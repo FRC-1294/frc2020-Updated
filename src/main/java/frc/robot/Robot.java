@@ -3,7 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.DrivebaseSubsystem;
-import frc.robot.subsystems.GameMechSubsystem;
+// import frc.robot.subsystems.GameMechSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -12,7 +12,7 @@ import frc.robot.subsystems.GameMechSubsystem;
  * project.
  */
 public class Robot extends TimedRobot {
-  public static GameMechSubsystem gameMech;
+  // public static GameMechSubsystem gameMech;
   public static DrivebaseSubsystem driveBase;
 
   public static boolean inAuto = false;
@@ -24,14 +24,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    gameMech = new GameMechSubsystem();
+    // gameMech = new GameMechSubsystem();
     driveBase = new DrivebaseSubsystem();
     
     driveBase.setFrontLeftSpeed(0);
     driveBase.setFrontRightSpeed(0);
     driveBase.setRearLeftSpeed(0); 
     driveBase.setRearRightSpeed(0);
-    gameMech.setZero();
+    // gameMech.setZero();
   }
   
   @Override
@@ -43,13 +43,13 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     // CommandScheduler.getInstance().cancelAll();
     driveBase.stop();
-    gameMech.setZero();
+    // gameMech.setZero();
   }
 
   @Override
   public void disabledPeriodic() {
     driveBase.stop();
-    gameMech.setZero();
+    // gameMech.setZero();
   }
 
   /**

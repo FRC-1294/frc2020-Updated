@@ -52,8 +52,8 @@ public class DrivebaseSubsystem extends SubsystemBase {
   private boolean isWall;
   
   public DrivebaseSubsystem() {
-    CameraServer.getInstance().startAutomaticCapture(0);
-    CameraServer.getInstance().startAutomaticCapture(1);
+    // CameraServer.getInstance().startAutomaticCapture(0);
+    // CameraServer.getInstance().startAutomaticCapture(1);
     frontLeftSpark.restoreFactoryDefaults(true);
     frontRightSpark.restoreFactoryDefaults(true);
     rearLeftSpark.restoreFactoryDefaults(true);
@@ -70,7 +70,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
     rearRightSpark.setSmartCurrentLimit(60);
 
     setRampRates(0.5);
-    setMode(idleMode.coast);
+    setMode(idleMode.brake);
 
     setPidControllers(frontLeftPID, defaultPID, defaultPID.kSlot);
     setPidControllers(frontRightPID, defaultPID, defaultPID.kSlot);
@@ -126,7 +126,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
     final double minPower = 0.2;
     final double minTurn = 0.05;
     final double fastestTurn = 0.2;
-    final double maxTurnOffset = 0.1 * getSign(forward);
+    // final double maxTurnOffset = 0.1 * getSign(forward);
     
     double leftSpeed = 0;
     double rightSpeed = 0;
@@ -165,6 +165,8 @@ public class DrivebaseSubsystem extends SubsystemBase {
     }
     
     SmartDashboard.putNumber("Output: turn", turn);
+    SmartDashboard.putNumber("Output: left", leftSpeed);
+    SmartDashboard.putNumber("Output: right", rightSpeed);
 
     //apply to PID for open loop control
     frontLeftSpark.set(leftSpeed);
