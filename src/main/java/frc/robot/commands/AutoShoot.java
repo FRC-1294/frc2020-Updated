@@ -32,9 +32,9 @@ public class AutoShoot extends CommandBase {
   double shooterSpeed;
 
   final int shootDis = 110;
-  final double shootRPM = 6300;
+  final double shootRPM = 5500; //6300
   final int shootMargin = 50;
-  final double shootTime = 5.0;
+  final double shootTime = 8.0;
 
   int step = 0;
 
@@ -46,8 +46,6 @@ public class AutoShoot extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    addRequirements(m_driveAuto);
-
     timer.start();
     timer.reset();
     resetVars();
@@ -104,12 +102,12 @@ public class AutoShoot extends CommandBase {
 
   private void initShooter() {
     shooterSpeed = m_shooter.getShooterVelocity();
-    m_shooter.setShooterPID(4000);
+    m_shooter.setShooterPID(shootRPM);
 
     boolean atSpeed = false;
     boolean timeHold = false;
 
-    if(Math.abs(shooterSpeed) >= 6200 && Math.abs(shooterSpeed) <= 6400) {
+    if(Math.abs(shooterSpeed) >= shootRPM-150 && Math.abs(shooterSpeed) <= shootRPM+150) {
       atSpeed = true;
     }
 

@@ -32,8 +32,14 @@ public class FeedShooter extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_shooter.setIndexer(0.2);
-    m_shooter.setIntaker(1);
+    m_shooter.setIndexer(0.8);
+
+    if (timer.get() <= targetTime/3+.1 && timer.get() >= targetTime/3-.1) {
+      m_shooter.setIntaker(-0.5);
+    }
+    else {
+      m_shooter.setIntaker(0.5);
+    }
   }
 
   // Called once the command ends or is interrupted.

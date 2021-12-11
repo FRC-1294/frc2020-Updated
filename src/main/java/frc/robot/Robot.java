@@ -86,6 +86,7 @@ public class Robot extends TimedRobot {
       //m_autonomousCommand = new DictatorLocator(cassius, m_driveAuto);
       m_autonomousCommand.schedule();
     }
+    inAuto = true;
   }
 
   /**
@@ -93,11 +94,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    inAuto = true;
-    // if (!m_autonomousCommand.isFinished() && !m_autonomousCommand.isScheduled()) {
-    //   m_autonomousCommand =  new AutoNavCommand(driveAuto, ultrasonic);
-    //   m_autonomousCommand.schedule();
-    // }
   }
 
   @Override
@@ -105,8 +101,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-    // ultrasonic.close();
+    inAuto = false;
   }
 
   /**
@@ -115,7 +110,6 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     CommandScheduler.getInstance().run();
-    inAuto = false;
   }
 
   @Override

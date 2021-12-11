@@ -114,11 +114,9 @@ public class DrivebaseSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    sparkDrive.feedWatchdog();
-
-    SmartDashboard.putString("AmountTraveled", getAmountTraveled(0) + " , " + getAmountTraveled(1));
-    SmartDashboard.putNumber("currentAngle", getCurrentAngle());
-    SmartDashboard.putNumber("encoder", getFrontLeftPosition());
+    // SmartDashboard.putString("AmountTraveled", getAmountTraveled(0) + " , " + getAmountTraveled(1));
+    // SmartDashboard.putNumber("currentAngle", getCurrentAngle());
+    // SmartDashboard.putNumber("encoder", getFrontLeftPosition());
     // SmartDashboard.putNumber("Ultrasonic Value", Robot.ultrasonic.getSensourLeft());
 
     // if (driveJoystick.getStartButtonPressed()) {
@@ -181,8 +179,9 @@ public class DrivebaseSubsystem extends SubsystemBase {
 
   public void arcadeDrive(double forward, double turn, boolean precise) {
     final double deadZone = 0.05;
-    final double minPower = 0.2;
+    final double minPower = 0.15;
     final double minTurn = 0.05;
+    final double maxTurn = 0.6;
     final double fastestTurn = 0.2;
     final double maxTurnOffset = 0.1 * getSign(forward);
     
@@ -195,7 +194,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
     if (Math.abs(forward) <= deadZone) forward = 0;
     if (Math.abs(turn) <= deadZone) turn = 0;
     //precision mode
-    if (precise) turn *= 0.6;
+    if (precise) turn *= 0.4;
 
     //dynamic turn sensititvity and offset adjustments
     double turnFactor = (1-fastestTurn) * Math.pow(1-Math.pow(fastestTurn, 8/3), 6) + minTurn;
@@ -209,7 +208,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
 
     //apply power to inputs for higher percision at lower velocities, with applied power
     forward = ((1-minPower) * Math.abs(Math.pow(forward, 8/3)) + minPower) * getSign(forward);
-    turn = ((1-minTurn) * Math.abs(Math.pow(turn, 8/3)) + minTurn) * getSign(turn) * turnFactor;// * getSign(turn);// + turnOffset;
+    turn = (maxTurn * Math.abs(Math.pow(turn, 8/3)) + minTurn) * getSign(turn) * turnFactor;// * getSign(turn);// + turnOffset;
 
     //differential drive logic
     leftSpeed = forward+turn;
@@ -229,7 +228,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
     frontRightSpark.set(rightSpeed);
     // setFrontLeftPID(maxSpeed*leftSpeed, ControlType.kVelocity, velocityPID.kSlot);
     // setFrontRightPID(maxSpeed*rightSpeed, ControlType.kVelocity, velocityPID.kSlot);
-    // sparkDrive.feed();
+    sparkDrive.feed();
   }
 
   //returns +1 or -1 based on num's sign

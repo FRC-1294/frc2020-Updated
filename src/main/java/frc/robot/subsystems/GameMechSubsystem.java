@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -30,6 +31,8 @@ public class GameMechSubsystem extends SubsystemBase {
   private double currentSpeed = 0.0;
   private XboxController gameJoystick = new XboxController(Constants.gameJoystick);
   public static Servo linActuator = new Servo(Constants.linearActuator);
+
+  Timer timer = new Timer();
   /**
    * Creates a new linearActuatorSubsystem.
    */
@@ -45,101 +48,107 @@ public class GameMechSubsystem extends SubsystemBase {
     shooter.configNominalOutputReverse(0);
     shooter.configPeakOutputForward(1);
     shooter.configPeakOutputReverse(-1);
+    timer.start();
   }
 
   //every loop it will check if any of the buttons are pressed and will do the coresponding task related with it
   @Override
   public void periodic() {
    double shooterSpeed = shooter.getSelectedSensorVelocity()/ticksPerRev;
-   SmartDashboard.putNumber("Shooter RPM", shooterSpeed);
-   SmartDashboard.putBoolean("Indexering", toIndex);
-   SmartDashboard.putBoolean("Shooting", toShoot);
+   if (timer.get() >= 0.5) {
+      SmartDashboard.putNumber("Shooter RPM", shooterSpeed);
+      SmartDashboard.putBoolean("Indexering", toIndex);
+      SmartDashboard.putBoolean("Shooting", toShoot);
+      timer.reset();
+   }
 
    //System.out.println(shooterSpeed);
 
-    //indexer
-    if(gameJoystick.getAButton()){
-      toIndex = true;
+   if(!Robot.inAuto) {
+      //indexer
+      if(gameJoystick.getAButton()){
+        toIndex = true;
 
-      if (toReversed) {
-        toReversed = false;
-        toShoot = false;
-      }
-    }
-    else {
-      toIndex = false;
-    }
-    if (toIndex){
-      setSRXSpeed(indexer, 0.5);
-    }
-    else {
-      if (!toReversed && !Robot.inAuto) setSRXSpeed(indexer, 0);
-    }
-
-    //intaker
-    if(triggerDrive() != 0){
-      setSRXSpeed(intaker, -triggerDrive()*0.5);
-    }
-    else {
-      setSRXSpeed(intaker, 0);
-    }
-
-    //shooter
-    if (gameJoystick.getBumperPressed(Hand.kLeft)) {
-      if ((!toShoot && shooterSpeed < 1000) || toShoot) {
-        toShoot = !toShoot;
-        toReversed = false;
-        currentSpeed = 6300 + offset;
-      }
-    }
-    else if (gameJoystick.getBumperPressed(Hand.kRight)) {
-      if ((!toShoot && shooterSpeed < 1000) || toShoot) {
-        toShoot = !toShoot;
-        toReversed = false;
-        currentSpeed = 7000 + offset;
-      }
-    }  
-    else if (gameJoystick.getXButtonPressed()) {
-      if ((!toShoot && shooterSpeed < 1000) || toShoot) {
-        toShoot = !toShoot;
-        toReversed = false;
-        currentSpeed = 5900 + offset;
-      }
-    }    
-    else if(gameJoystick.getBButtonPressed()){
-      toReversed = !toReversed;
-
-      if(toReversed){
-        toShoot = true;
-        setSRXSpeed(indexer, -0.3);
-        currentSpeed = -500-offset;
-      }
-      else{
-        toShoot = false;
-        setSRXSpeed(indexer, 0);
-      }
-    }
-    
-    //shooter PID
-    if (toShoot) setShooterPID(currentSpeed);
-    else setFXSpeed(shooter, 0);
-
-    if (gameJoystick.getYButtonPressed()) {
-      extendColor = !extendColor;
-      if (extendColor) {
-        linActuator.set(0.62);
+        if (toReversed) {
+          toReversed = false;
+          toShoot = false;
+        }
       }
       else {
-        linActuator.set(0.2);
+        toIndex = false;
       }
-    }
+      if (toIndex){
+        setSRXSpeed(indexer, 0.5);
+      }
+      else {
+        if (!toReversed && !Robot.inAuto) setSRXSpeed(indexer, 0);
+      }
 
-    //colorer
-    if(Math.abs(gameJoystick.getX(Hand.kRight)) >= 0.05){
-      setSRXSpeed(colorWheel, -gameJoystick.getX(Hand.kRight));
-    }
-    else {
-      setSRXSpeed(colorWheel, 0);
+      //intaker
+      if(triggerDrive() != 0){
+        setSRXSpeed(intaker, -triggerDrive()*0.5);
+      }
+      else {
+        setSRXSpeed(intaker, 0);
+      }
+
+      //shooter
+      if (gameJoystick.getBumperPressed(Hand.kLeft)) {
+        if ((!toShoot && shooterSpeed < 1000) || toShoot) {
+          toShoot = !toShoot;
+          toReversed = false;
+          currentSpeed = 6300 + offset;
+        }
+      }
+      else if (gameJoystick.getBumperPressed(Hand.kRight)) {
+        if ((!toShoot && shooterSpeed < 1000) || toShoot) {
+          toShoot = !toShoot;
+          toReversed = false;
+          currentSpeed = 5500 + offset;
+        }
+      }  
+      else if (gameJoystick.getXButtonPressed()) {
+        if ((!toShoot && shooterSpeed < 1000) || toShoot) {
+          toShoot = !toShoot;
+          toReversed = false;
+          currentSpeed = 5900 + offset;
+        }
+      }    
+      else if(gameJoystick.getBButtonPressed()){
+        toReversed = !toReversed;
+
+        if(toReversed){
+          toShoot = true;
+          setSRXSpeed(indexer, -0.3);
+          currentSpeed = -500-offset;
+        }
+        else{
+          toShoot = false;
+          setSRXSpeed(indexer, 0);
+        }
+      }
+      
+      //shooter PID
+      if (toShoot) setShooterPID(currentSpeed);
+      else setFXSpeed(shooter, 0);
+
+      if (gameJoystick.getYButtonPressed()) {
+        extendColor = !extendColor;
+        if (extendColor) {
+          linActuator.set(0.62);
+        }
+        else {
+          linActuator.set(0.2);
+        }
+      }
+
+      //colorer
+      if(Math.abs(gameJoystick.getX(Hand.kRight)) >= 0.05){
+        setSRXSpeed(colorWheel, -gameJoystick.getX(Hand.kRight));
+      }
+      else {
+        setSRXSpeed(colorWheel, 0);
+      }
     }
   }
 
@@ -181,7 +190,7 @@ public class GameMechSubsystem extends SubsystemBase {
     setSRXSpeed(indexer, 0);
     setSRXSpeed(colorWheel, 0);
     setFXSpeed(shooter, 0);
-    linActuator.set(0.2);
+    //linActuator.set(0.2);
     
     toIndex = false;
     toIntake = false;
